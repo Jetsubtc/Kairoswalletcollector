@@ -3,14 +3,23 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Create a PostgreSQL connection pool
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/walletcollector',
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-});
+// Create a PostgreSQL connection pool only if not building for static deployment
+let pool;
+if (process.env.NODE_ENV !== 'production' || process.env.DATABASE_URL) {
+  pool = new Pool({
+    connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/walletcollector',
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  });
+}
 
 // Initialize database tables
 export async function initializeDatabase() {
+  // Skip database initialization if no pool is available (e.g., during static build)
+  if (!pool) {
+    console.log('Database not available, skipping initialization');
+    return;
+  }
+  
   const client = await pool.connect();
   try {
     // Create wallets table if it doesn't exist
@@ -42,6 +51,14 @@ export async function initializeDatabase() {
 
 // Add a new wallet entry
 export async function addWallet(walletData) {
+  // Return early if no database is available
+  if (!pool) {
+    return {
+      success: false,
+      message: 'Database not available'
+    };
+  }
+  
   const client = await pool.connect();
   try {
     const result = await client.query(
@@ -83,6 +100,11 @@ export async function addWallet(walletData) {
 
 // Get all wallets
 export async function getAllWallets() {
+  // Return empty array if no database is available
+  if (!pool) {
+    return [];
+  }
+  
   const client = await pool.connect();
   try {
     const result = await client.query(
@@ -105,6 +127,11 @@ export async function getAllWallets() {
 
 // Get wallet count
 export async function getWalletCount() {
+  // Return 0 if no database is available
+  if (!pool) {
+    return 0;
+  }
+  
   const client = await pool.connect();
   try {
     const result = await client.query('SELECT COUNT(*) as count FROM wallets');
