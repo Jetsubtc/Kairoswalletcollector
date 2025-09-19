@@ -1,46 +1,59 @@
 # Deployment Guide
 
-This guide explains how to deploy the HyperWallet Collector application to Vercel with PostgreSQL database support.
+This guide explains how to deploy the HyperWallet Collector application as a static site to GitHub Pages or Vercel.
 
 ## Prerequisites
 
-1. A Vercel account
-2. A PostgreSQL database (can be hosted on services like:
-   - [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres)
-   - [Supabase](https://supabase.com/)
-   - [Railway](https://railway.app/)
-   - [Heroku Postgres](https://www.heroku.com/postgres)
-   - Self-hosted PostgreSQL)
+1. A GitHub account (for GitHub Pages deployment)
+2. A Vercel account (for Vercel deployment)
 
-## Deployment Steps
+## Deployment Options
 
-### 1. Prepare Your Database
+### GitHub Pages Deployment
 
-First, you'll need to set up a PostgreSQL database. If you're using Vercel, you can use their integrated Postgres service:
+#### Automatic Deployment with deploy.sh Script
 
-1. Go to your Vercel project dashboard
-2. Navigate to the "Storage" tab
-3. Click "Create Database" and select "Postgres"
-4. Follow the setup instructions
+The project includes a [deploy.sh](file:///Users/sithu/Downloads/HyperWalletCollector%202/deploy.sh) script that automates the deployment process:
 
-Alternatively, you can use any external PostgreSQL provider.
+1. Make sure the script is executable:
+   ```bash
+   chmod +x deploy.sh
+   ```
 
-### 2. Set Environment Variables
+2. Run the deployment script:
+   ```bash
+   ./deploy.sh
+   ```
 
-In your Vercel project settings, add the following environment variables:
+This script will:
+- Install dependencies
+- Build the static site
+- Deploy to the `gh-pages` branch
 
-```
-DATABASE_URL=your_postgresql_connection_string
-NODE_ENV=production
-```
+#### Manual GitHub Pages Deployment
 
-The `DATABASE_URL` should be provided by your PostgreSQL provider.
+1. Build the static site:
+   ```bash
+   npm run build
+   ```
 
-### 3. Deploy to Vercel
+2. The built files will be in the `dist/` directory
 
-You can deploy the application in several ways:
+3. Push the contents of `dist/` to your `gh-pages` branch
 
-#### Option 1: Deploy from GitHub
+#### GitHub Pages Configuration
+
+1. Go to your repository settings on GitHub
+2. Navigate to "Pages" in the sidebar
+3. Under "Build and deployment", select "Deploy from a branch"
+4. Select "gh-pages" as the branch
+5. Set the folder to "/ (root)"
+6. Click "Save"
+
+### Vercel Deployment
+
+#### Deploy from GitHub
+
 1. Push your code to a GitHub repository
 2. Connect the repository to Vercel
 3. Configure the build settings:
@@ -48,7 +61,8 @@ You can deploy the application in several ways:
    - Output Directory: `dist`
    - Install Command: `npm install`
 
-#### Option 2: Deploy using Vercel CLI
+#### Deploy using Vercel CLI
+
 ```bash
 # Install Vercel CLI
 npm install -g vercel
@@ -57,70 +71,60 @@ npm install -g vercel
 vercel
 ```
 
-### 4. Initialize Database Tables
-
-After deployment, you'll need to initialize the database tables. There are two ways to do this:
-
-#### Option 1: Run the initialization script manually
-If you have access to run scripts on your deployment, you can run:
-```bash
-npm run db:init
-```
-
-#### Option 2: Use the automatic initialization
-The application is configured to automatically initialize the database on startup, so this should happen automatically when the application starts.
-
-### 5. Migrate Existing Data (if applicable)
-
-If you have existing data in JSON format that you want to migrate to the database:
-
-1. Ensure your local environment is configured with the same `DATABASE_URL` as your production environment
-2. Run the migration script:
-   ```bash
-   npm run db:migrate
-   ```
-
 ## Vercel Configuration
 
-### Build Settings
-- **Build Command**: `npm run build`
-- **Output Directory**: `dist`
-- **Install Command**: `npm install`
+The project includes a [vercel.json](file:///Users/sithu/Downloads/HyperWalletCollector%202/vercel.json) file with the correct configuration for static site deployment:
 
-### Environment Variables
-Make sure to set these environment variables in your Vercel project settings:
-- `DATABASE_URL` - Your PostgreSQL connection string
-- `NODE_ENV` - Set to `production`
+```json
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/dist/$1"
+    }
+  ]
+}
+```
 
 ## Troubleshooting
 
-### Database Connection Issues
-If you encounter database connection issues:
-1. Verify your `DATABASE_URL` is correct
-2. Ensure your database allows connections from Vercel's IP addresses
-3. Check if you need to enable SSL connections
+### 404 Errors
 
-### Missing Tables
-If you get errors about missing tables:
-1. Make sure the database initialization ran successfully
-2. You can manually run `npm run db:init` if needed
+If you're seeing 404 errors after deployment:
 
-### Performance Issues
-For better performance with large datasets:
-1. Ensure proper indexing on the wallets table (already included in the schema)
-2. Consider adding additional indexes if needed for your specific queries
+#### For GitHub Pages:
+1. Verify that the `gh-pages` branch contains the built files
+2. Check that GitHub Pages is configured to serve from the `gh-pages` branch
+3. Ensure the `.nojekyll` file is present in the `gh-pages` branch
+4. Wait a few minutes for GitHub to process the deployment
+
+#### For Vercel:
+1. Check the deployment logs in your Vercel dashboard
+2. Verify that the build completed successfully
+3. Ensure the Output Directory is set to `dist`
+4. Check that the [vercel.json](file:///Users/sithu/Downloads/HyperWalletCollector%202/vercel.json) file is correctly configured
+
+### Form Submission Issues
+
+The form uses Formspree for static form handling. If submissions aren't working:
+
+1. Verify that the form action URL is correct
+2. Check that you've created a form on Formspree and replaced `YOUR_FORM_ID` with your actual form ID
+3. Make sure the form includes the correct method (`POST`)
 
 ## Monitoring
 
 After deployment, you can monitor your application through:
-1. Vercel's built-in analytics
-2. Database performance monitoring through your PostgreSQL provider
-3. Application logs in Vercel's dashboard
-
-## Scaling
-
-For high-traffic applications:
-1. Consider using connection pooling (already implemented)
-2. Monitor database performance and optimize queries as needed
-3. Use database read replicas if necessary
-4. Implement caching for frequently accessed data
+1. GitHub Pages status (for GitHub Pages deployments)
+2. Vercel's dashboard (for Vercel deployments)
+3. Formspree dashboard (for form submissions)
