@@ -537,7 +537,7 @@ import '../styles/global.css';
       </div>
       
       <div class="card">
-        <form id="walletForm">
+        <form id="walletForm" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
           <div class="form-group">
             <label for="twitterHandle" class="form-label">Twitter Handle</label>
             <input
@@ -580,19 +580,7 @@ import '../styles/global.css';
         <p>ⓒ 2025 Kairos. Powered by Hyperliquid.</p>
       </div>
     </div>
-    
-    <!-- Follow box that appears after submission -->
-    <div id="followBox" class="follow-box">
-      <div class="follow-content">
-        <button id="closeFollowBox" class="close-btn">X</button>
-        <div class="follow-text">
-          <div>Thanks for submitted.</div>
-          <div>Don't forget to follow our Twitter.</div>
-        </div>
-        <button id="followTwitterBtn" class="follow-btn">Kaito(X)</button>
-      </div>
-    </div>
-    
+
     <script is:inline>
       // Hide loading screen when page is fully loaded
       window.addEventListener('load', function() {
@@ -613,9 +601,10 @@ import '../styles/global.css';
         }
       });
       
-      // Show follow box after form submission
+      // Handle form submission
       document.getElementById('walletForm').addEventListener('submit', function(e) {
-        e.preventDefault(); // Prevent default form submission
+        // Show success message immediately (since we're using static form submission)
+        e.preventDefault();
         
         // Get form values
         const twitterHandle = document.getElementById('twitterHandle').value;
@@ -626,50 +615,25 @@ import '../styles/global.css';
           return;
         }
         
-        // Send data to backend API
-        fetch('/api/submit', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            twitterHandle: twitterHandle,
-            walletAddress: walletAddress
-          })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            // Clear the form fields
-            document.getElementById('twitterHandle').value = '';
-            document.getElementById('walletAddress').value = '';
-            
-            // Show success message
-            const messageDiv = document.getElementById('message');
-            messageDiv.textContent = 'Wallet submitted successfully!';
-            messageDiv.className = 'message success';
-            messageDiv.style.display = 'block';
-            
-            // Show follow box after a short delay
-            setTimeout(function() {
-              document.getElementById('followBox').style.display = 'flex';
-            }, 1000);
-          } else {
-            // Show error message
-            const messageDiv = document.getElementById('message');
-            messageDiv.textContent = data.message || 'Submission failed';
-            messageDiv.className = 'message error';
-            messageDiv.style.display = 'block';
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          // Show error message
-          const messageDiv = document.getElementById('message');
-          messageDiv.textContent = 'Network error. Please try again.';
-          messageDiv.className = 'message error';
-          messageDiv.style.display = 'block';
-        });
+        // Show success message
+        const messageDiv = document.getElementById('message');
+        messageDiv.textContent = 'Wallet submitted successfully!';
+        messageDiv.className = 'message success';
+        messageDiv.style.display = 'block';
+        
+        // Clear the form fields
+        document.getElementById('twitterHandle').value = '';
+        document.getElementById('walletAddress').value = '';
+        
+        // Show follow box after a short delay
+        setTimeout(function() {
+          document.getElementById('followBox').style.display = 'flex';
+        }, 1000);
+        
+        // Actually submit the form
+        setTimeout(function() {
+          e.target.submit();
+        }, 2000);
       });
       
       // Close follow box when X button is clicked
