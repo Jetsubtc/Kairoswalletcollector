@@ -4,7 +4,8 @@ import tailwind from '@tailwindcss/vite';
 
 // https://astro.build/config
 export default defineConfig({
-  output: 'server',
+  output: 'static',
+  base: '/Kairoswalletcollector/',
   vite: {
     plugins: [tailwind()],
   },
