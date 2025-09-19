@@ -23,6 +23,10 @@ cp -r dist/* temp-deploy/
 echo "Copying image directory..."
 cp -r image temp-deploy/
 
+# Copy test file for debugging
+echo "Copying test file..."
+cp test-image-access.html temp-deploy/
+
 # Checkout to gh-pages branch (or create it if it doesn't exist)
 echo "Switching to gh-pages branch..."
 git checkout -B gh-pages
@@ -42,7 +46,7 @@ git add .
 
 # Commit and push (force push to handle any conflicts)
 echo "Committing and pushing to GitHub..."
-git commit -m "Deploy to GitHub Pages"
+git commit -m "Deploy to GitHub Pages with image test"
 git push origin gh-pages --force
 
 # Switch back to main branch
