@@ -8,7 +8,8 @@
     "preview": "astro preview",
     "astro": "astro",
     "db:init": "node src/utils/initDb.js",
-    "db:migrate": "node src/utils/migrateData.js"
+    "db:migrate": "node src/utils/migrateData.js",
+    "vercel-build": "npm run build"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.13",
