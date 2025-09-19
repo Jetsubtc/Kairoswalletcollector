@@ -2,6 +2,8 @@
 
 A wallet collection website for the Kairos Prediction Game on Hyperliquid chain, built with Astro and TailwindCSS.
 
+<!-- Deployment Status: Ready for GitHub Pages -->
+
 ## 🚀 Project Structure
 
 ```text
