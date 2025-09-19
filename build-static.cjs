@@ -23,8 +23,10 @@ if (existsSync(srcIndexPath)) {
   // Remove Astro-specific expressions
   content = content.replace(/\{Astro\.generator\}/g, 'Astro Static Build');
   
-  // Fix image path to be relative instead of absolute for better compatibility
-  content = content.replace(/src="\/images\/loading\.gif"/g, 'src="images/loading.gif"');
+  // Fix image path to work with both root and subdirectory deployments
+  // Using a relative path that works from the same directory
+  content = content.replace(/src="\/images\/loading\.gif"/g, 'src="./images/loading.gif"');
+  content = content.replace(/src="images\/loading\.gif"/g, 'src="./images/loading.gif"');
   
   // Write the content as HTML
   writeFileSync(indexPath, content);
