@@ -23,6 +23,9 @@ if (existsSync(srcIndexPath)) {
   // Remove Astro-specific expressions
   content = content.replace(/\{Astro\.generator\}/g, 'Astro Static Build');
   
+  // Fix image path to be relative instead of absolute for better compatibility
+  content = content.replace(/src="\/images\/loading\.gif"/g, 'src="images/loading.gif"');
+  
   // Write the content as HTML
   writeFileSync(indexPath, content);
   console.log('Created index.html from index.astro');
