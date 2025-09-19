@@ -23,11 +23,12 @@ if (existsSync(srcIndexPath)) {
   // Remove Astro-specific expressions
   content = content.replace(/\{Astro\.generator\}/g, 'Astro Static Build');
   
-  // Fix image path to use the correct rabbit loading.gif directly from the image directory
-  // We'll reference it as ./image/rabbit%20loading.gif (URL encoded space)
-  content = content.replace(/src="\/images\/loading\.gif"/g, 'src="./image/rabbit%20loading.gif"');
-  content = content.replace(/src="images\/loading\.gif"/g, 'src="./image/rabbit%20loading.gif"');
-  content = content.replace(/src="\.\/image\/rabbit\-loading\.gif"/g, 'src="./image/rabbit%20loading.gif"');
+  // Fix image path to use the correct rabbit loading.gif
+  // We'll reference it as ./image/rabbit loading.gif (without URL encoding)
+  content = content.replace(/src="\/images\/loading\.gif"/g, 'src="./image/rabbit loading.gif"');
+  content = content.replace(/src="images\/loading\.gif"/g, 'src="./image/rabbit loading.gif"');
+  content = content.replace(/src="\.\/image\/rabbit%20loading\.gif"/g, 'src="./image/rabbit loading.gif"');
+  content = content.replace(/src="\.\/image\/rabbit\-loading\.gif"/g, 'src="./image/rabbit loading.gif"');
   
   // Write the content as HTML
   writeFileSync(indexPath, content);
@@ -95,4 +96,5 @@ if (existsSync(publicDir)) {
 }
 
 // No need to copy the rabbit loading.gif as we're referencing it directly from the source image directory
+// The deploy script will copy the image directory to the gh-pages branch
 console.log('Static build completed successfully!');

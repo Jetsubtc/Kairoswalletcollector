@@ -19,6 +19,10 @@ echo "Creating temporary directory..."
 mkdir -p temp-deploy
 cp -r dist/* temp-deploy/
 
+# Also copy the image directory for the rabbit loading.gif
+echo "Copying image directory..."
+cp -r image temp-deploy/
+
 # Checkout to gh-pages branch (or create it if it doesn't exist)
 echo "Switching to gh-pages branch..."
 git checkout -B gh-pages
