@@ -11,12 +11,10 @@ export async function GET() {
     );
   } catch (error) {
     console.error('API Error:', error);
+    // Return 0 as fallback
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        message: 'Internal server error' 
-      }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      JSON.stringify({ count: 0 }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   }
 }

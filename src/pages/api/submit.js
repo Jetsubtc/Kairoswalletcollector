@@ -29,7 +29,7 @@ export async function POST({ request }) {
       );
     }
     
-    // Add wallet to database
+    // Add wallet to database or JSON file
     const result = await addWalletEntry({
       twitterHandle: formData.twitterHandle,
       walletAddress: formData.walletAddress
