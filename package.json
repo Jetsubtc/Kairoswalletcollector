@@ -4,12 +4,12 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "node src/utils/initDb.js && astro dev",
-    "build": "astro build",
+    "build": "node build-static.cjs",
     "preview": "astro preview",
     "astro": "astro",
     "db:init": "node src/utils/initDb.js",
     "db:migrate": "node src/utils/migrateData.js",
-    "vercel-build": "npm run build"
+    "vercel-build": "node build-static.cjs"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.13",
