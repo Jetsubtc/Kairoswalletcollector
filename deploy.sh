@@ -23,6 +23,10 @@ cp -r dist/* temp-deploy/
 echo "Copying image directory..."
 cp -r image temp-deploy/
 
+# Create a copy of rabbit loading.gif without spaces for better compatibility
+echo "Creating copy of rabbit loading.gif without spaces..."
+cp "image/rabbit loading.gif" temp-deploy/image/rabbit-loading.gif
+
 # Copy test file for debugging
 echo "Copying test file..."
 cp test-image-access.html temp-deploy/
@@ -46,7 +50,7 @@ git add .
 
 # Commit and push (force push to handle any conflicts)
 echo "Committing and pushing to GitHub..."
-git commit -m "Deploy to GitHub Pages with image test"
+git commit -m "Deploy to GitHub Pages with image test and no-space copy"
 git push origin gh-pages --force
 
 # Switch back to main branch

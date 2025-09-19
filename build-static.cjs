@@ -1,4 +1,4 @@
-const { readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync } = require('fs');
+const { readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync, symlinkSync } = require('fs');
 const { join } = require('path');
 
 // Create dist directory if it doesn't exist
@@ -24,11 +24,11 @@ if (existsSync(srcIndexPath)) {
   content = content.replace(/\{Astro\.generator\}/g, 'Astro Static Build');
   
   // Fix image path to use the correct rabbit loading.gif
-  // We'll reference it as ./image/rabbit loading.gif (without URL encoding)
-  content = content.replace(/src="\/images\/loading\.gif"/g, 'src="./image/rabbit loading.gif"');
-  content = content.replace(/src="images\/loading\.gif"/g, 'src="./image/rabbit loading.gif"');
-  content = content.replace(/src="\.\/image\/rabbit%20loading\.gif"/g, 'src="./image/rabbit loading.gif"');
-  content = content.replace(/src="\.\/image\/rabbit\-loading\.gif"/g, 'src="./image/rabbit loading.gif"');
+  // Try both paths to see which one works
+  content = content.replace(/src="\/images\/loading\.gif"/g, 'src="./image/rabbit-loading.gif"');
+  content = content.replace(/src="images\/loading\.gif"/g, 'src="./image/rabbit-loading.gif"');
+  content = content.replace(/src="\.\/image\/rabbit%20loading\.gif"/g, 'src="./image/rabbit-loading.gif"');
+  content = content.replace(/src="\.\/image\/rabbit loading\.gif"/g, 'src="./image/rabbit-loading.gif"');
   
   // Write the content as HTML
   writeFileSync(indexPath, content);
