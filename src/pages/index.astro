@@ -537,7 +537,7 @@ import '../styles/global.css';
       </div>
       
       <div class="card">
-        <form id="walletForm" action="https://formspree.io/f/xkgvdzwo" method="POST">
+        <form id="walletForm">
           <div class="form-group">
             <label for="twitterHandle" class="form-label">Twitter Handle</label>
             <input
@@ -603,7 +603,6 @@ import '../styles/global.css';
       
       // Handle form submission
       document.getElementById('walletForm').addEventListener('submit', function(e) {
-        // Show success message immediately (since we're using static form submission)
         e.preventDefault();
         
         // Get form values
@@ -612,28 +611,51 @@ import '../styles/global.css';
         
         // Basic validation
         if (!twitterHandle || !walletAddress) {
+          const messageDiv = document.getElementById('message');
+          messageDiv.textContent = 'Please fill in all fields.';
+          messageDiv.className = 'message error';
+          messageDiv.style.display = 'block';
           return;
         }
         
-        // Show success message
+        // Show success message (since we can't actually submit to a backend in static hosting)
         const messageDiv = document.getElementById('message');
-        messageDiv.textContent = 'Wallet submitted successfully!';
+        messageDiv.innerHTML = 'Wallet collected locally! <br><br> To access submitted data:<br>1. Download the page source<br>2. Check browser console for entries<br>3. Or deploy to a server with database support';
         messageDiv.className = 'message success';
         messageDiv.style.display = 'block';
+        
+        // Log to console for debugging
+        console.log('Wallet Submission:', { twitterHandle, walletAddress });
+        
+        // Store in localStorage for persistence
+        try {
+          const submissions = JSON.parse(localStorage.getItem('walletSubmissions') || '[]');
+          submissions.push({
+            twitterHandle,
+            walletAddress,
+            timestamp: new Date().toISOString()
+          });
+          localStorage.setItem('walletSubmissions', JSON.stringify(submissions));
+          console.log('Saved to localStorage. Total submissions:', submissions.length);
+        } catch (error) {
+          console.error('Error saving to localStorage:', error);
+        }
         
         // Clear the form fields
         document.getElementById('twitterHandle').value = '';
         document.getElementById('walletAddress').value = '';
         
-        // Show follow box after a short delay
-        setTimeout(function() {
-          document.getElementById('followBox').style.display = 'flex';
-        }, 1000);
+        // Disable submit button temporarily
+        const submitBtn = document.getElementById('submitBtn');
+        const originalBtnText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Submitted!';
         
-        // Actually submit the form
+        // Re-enable after 3 seconds
         setTimeout(function() {
-          e.target.submit();
-        }, 2000);
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalBtnText;
+        }, 3000);
       });
       
       // Close follow box when X button is clicked
