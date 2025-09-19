@@ -23,10 +23,9 @@ if (existsSync(srcIndexPath)) {
   // Remove Astro-specific expressions
   content = content.replace(/\{Astro\.generator\}/g, 'Astro Static Build');
   
-  // Fix image path to work with both root and subdirectory deployments
-  // Using a relative path that works from the same directory
-  content = content.replace(/src="\/images\/loading\.gif"/g, 'src="./images/loading.gif"');
-  content = content.replace(/src="images\/loading\.gif"/g, 'src="./images/loading.gif"');
+  // Fix image path to use the correct rabbit loading.gif
+  content = content.replace(/src="\/images\/loading\.gif"/g, 'src="./image/rabbit%20loading.gif"');
+  content = content.replace(/src="images\/loading\.gif"/g, 'src="./image/rabbit%20loading.gif"');
   
   // Write the content as HTML
   writeFileSync(indexPath, content);
@@ -65,7 +64,7 @@ if (existsSync(publicDir)) {
     }
   });
   
-  // Copy the entire images directory
+  // Copy the entire images directory if it exists
   const imagesSrc = join(publicDir, 'images');
   const imagesDest = join(distDir, 'images');
   if (existsSync(imagesSrc)) {
@@ -87,6 +86,24 @@ if (existsSync(publicDir)) {
     } catch (err) {
       console.log('Could not copy images directory: ' + err.message);
     }
+  }
+}
+
+// Copy the rabbit loading.gif from the image directory
+const imageSrc = 'image';
+const imageDest = join(distDir, 'image');
+if (existsSync(imageSrc)) {
+  // Create image directory in dist
+  if (!existsSync(imageDest)) {
+    mkdirSync(imageDest, { recursive: true });
+  }
+  
+  // Copy rabbit loading.gif
+  const srcPath = join(imageSrc, 'rabbit loading.gif');
+  const destPath = join(imageDest, 'rabbit loading.gif');
+  if (existsSync(srcPath)) {
+    copyFileSync(srcPath, destPath);
+    console.log('Copied rabbit loading.gif');
   }
 }
 
