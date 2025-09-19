@@ -23,10 +23,11 @@ if (existsSync(srcIndexPath)) {
   // Remove Astro-specific expressions
   content = content.replace(/\{Astro\.generator\}/g, 'Astro Static Build');
   
-  // Fix image path to use the correct rabbit loading.gif with a renamed version (no spaces)
-  content = content.replace(/src="\/images\/loading\.gif"/g, 'src="./images/rabbit-loading.gif"');
-  content = content.replace(/src="images\/loading\.gif"/g, 'src="./images/rabbit-loading.gif"');
-  content = content.replace(/src="\.\/image\/rabbit%20loading\.gif"/g, 'src="./images/rabbit-loading.gif"');
+  // Fix image path to use the correct rabbit loading.gif directly from the image directory
+  // We'll reference it as ./image/rabbit%20loading.gif (URL encoded space)
+  content = content.replace(/src="\/images\/loading\.gif"/g, 'src="./image/rabbit%20loading.gif"');
+  content = content.replace(/src="images\/loading\.gif"/g, 'src="./image/rabbit%20loading.gif"');
+  content = content.replace(/src="\.\/image\/rabbit\-loading\.gif"/g, 'src="./image/rabbit%20loading.gif"');
   
   // Write the content as HTML
   writeFileSync(indexPath, content);
@@ -65,7 +66,7 @@ if (existsSync(publicDir)) {
     }
   });
   
-  // Copy the entire images directory if it exists
+  // Copy the entire images directory if it exists (but not the rabbit loading.gif)
   const imagesSrc = join(publicDir, 'images');
   const imagesDest = join(distDir, 'images');
   if (existsSync(imagesSrc)) {
@@ -74,15 +75,18 @@ if (existsSync(publicDir)) {
       mkdirSync(imagesDest, { recursive: true });
     }
     
-    // Copy all files in images directory
+    // Copy all files in images directory except loading.gif
     const { readdirSync } = require('fs');
     try {
       const imageFiles = readdirSync(imagesSrc);
       imageFiles.forEach(file => {
-        const srcPath = join(imagesSrc, file);
-        const destPath = join(imagesDest, file);
-        copyFileSync(srcPath, destPath);
-        console.log('Copied image: ' + file);
+        // Skip loading.gif as we're referencing the one in the image directory directly
+        if (file !== 'loading.gif') {
+          const srcPath = join(imagesSrc, file);
+          const destPath = join(imagesDest, file);
+          copyFileSync(srcPath, destPath);
+          console.log('Copied image: ' + file);
+        }
       });
     } catch (err) {
       console.log('Could not copy images directory: ' + err.message);
@@ -90,22 +94,5 @@ if (existsSync(publicDir)) {
   }
 }
 
-// Copy the rabbit loading.gif from the image directory and rename it to avoid spaces
-const imageSrc = 'image';
-const imagesDest = join(distDir, 'images');
-if (existsSync(imageSrc)) {
-  // Create images directory in dist if it doesn't exist
-  if (!existsSync(imagesDest)) {
-    mkdirSync(imagesDest, { recursive: true });
-  }
-  
-  // Copy rabbit loading.gif and rename it to rabbit-loading.gif (no spaces)
-  const srcPath = join(imageSrc, 'rabbit loading.gif');
-  const destPath = join(imagesDest, 'rabbit-loading.gif');
-  if (existsSync(srcPath)) {
-    copyFileSync(srcPath, destPath);
-    console.log('Copied and renamed rabbit loading.gif to rabbit-loading.gif');
-  }
-}
-
+// No need to copy the rabbit loading.gif as we're referencing it directly from the source image directory
 console.log('Static build completed successfully!');
