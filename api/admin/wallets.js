@@ -1,17 +1,24 @@
 import pg from 'pg';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 const { Pool } = pg;
 
-// PostgreSQL connection pool
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? {
-    rejectUnauthorized: false
-  } : false
-});
+// PostgreSQL connection pool - created per function invocation
+let pool;
+
+function getPool() {
+  if (!pool) {
+    pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.NODE_ENV === 'production' ? {
+        rejectUnauthorized: false
+      } : false,
+      max: 1, // Limit connections for serverless
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000,
+    });
+  }
+  return pool;
+}
 
 // Database functions
 async function getAllWallets() {
@@ -22,6 +29,7 @@ async function getAllWallets() {
   `;
 
   try {
+    const pool = getPool();
     const client = await pool.connect();
     const result = await client.query(query);
     client.release();
@@ -39,6 +47,7 @@ async function getWalletCount() {
   `;
 
   try {
+    const pool = getPool();
     const client = await pool.connect();
     const result = await client.query(query);
     client.release();
@@ -61,6 +70,7 @@ async function createWalletsTable() {
   `;
 
   try {
+    const pool = getPool();
     const client = await pool.connect();
     await client.query(query);
     console.log('Wallets table created or already exists');
@@ -87,6 +97,8 @@ const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
 export default async function handler(request, response) {
+  console.log('Admin API function called:', request.method, request.url);
+  
   // Enable CORS for all origins
   response.setHeader('Access-Control-Allow-Origin', '*');
   response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
