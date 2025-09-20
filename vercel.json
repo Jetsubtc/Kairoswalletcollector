@@ -7,16 +7,16 @@
       "config": {
         "distDir": "dist"
       }
-    },
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
+      "src": "/api/wallets",
+      "dest": "/api/wallets.js"
+    },
+    {
+      "src": "/api/admin/wallets",
+      "dest": "/api/admin/wallets.js"
     },
     {
       "src": "/(.*)",
