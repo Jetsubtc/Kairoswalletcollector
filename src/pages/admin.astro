@@ -185,6 +185,17 @@ import '../styles/global.css';
         <h2 class="card-title">Admin Login</h2>
         <form id="loginForm">
           <div class="form-group">
+            <label for="username" class="form-label">Username</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              required
+              class="form-input"
+            />
+          </div>
+          
+          <div class="form-group">
             <label for="password" class="form-label">Password</label>
             <input
               type="password"
@@ -242,8 +253,8 @@ import '../styles/global.css';
     
     <script is:inline>
       // Check if already logged in
-      const token = localStorage.getItem('adminToken');
-      if (token) {
+      const credentials = sessionStorage.getItem('adminCredentials');
+      if (credentials) {
         showDashboard();
         loadDashboardData();
       }
@@ -252,18 +263,28 @@ import '../styles/global.css';
       document.getElementById('loginForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         
+        const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
         const loginMessage = document.getElementById('loginMessage');
         
         try {
-          // In a real app, you would send this to an API endpoint
-          // For this demo, we'll just check against our hardcoded password
-          if (password === 'admin123') {
-            localStorage.setItem('adminToken', password);
+          // Encode credentials for Basic Authentication
+          const credentials = btoa(`${username}:${password}`);
+          
+          // Test authentication
+          const response = await fetch('/api/admin/wallets', {
+            headers: {
+              'Authorization': `Basic ${credentials}`
+            }
+          });
+          
+          if (response.ok) {
+            // Store credentials in sessionStorage for subsequent requests
+            sessionStorage.setItem('adminCredentials', credentials);
             showDashboard();
             loadDashboardData();
           } else {
-            showMessage(loginMessage, 'Invalid password', 'error');
+            showMessage(loginMessage, 'Invalid credentials', 'error');
           }
         } catch (error) {
           console.error('Login error:', error);
@@ -273,16 +294,22 @@ import '../styles/global.css';
       
       // Logout handler
       document.getElementById('logoutBtn').addEventListener('click', function() {
-        localStorage.removeItem('adminToken');
+        sessionStorage.removeItem('adminCredentials');
         showLogin();
       });
       
       // Export handler
       document.getElementById('exportBtn').addEventListener('click', async function() {
         try {
+          const credentials = sessionStorage.getItem('adminCredentials');
+          if (!credentials) {
+            showLogin();
+            return;
+          }
+          
           const response = await fetch('/api/admin/wallets', {
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+              'Authorization': `Basic ${credentials}`
             }
           });
           
@@ -347,9 +374,15 @@ import '../styles/global.css';
       // Load dashboard data
       async function loadDashboardData() {
         try {
+          const credentials = sessionStorage.getItem('adminCredentials');
+          if (!credentials) {
+            showLogin();
+            return;
+          }
+          
           const response = await fetch('/api/admin/wallets', {
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+              'Authorization': `Basic ${credentials}`
             }
           });
           

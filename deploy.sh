@@ -10,6 +10,10 @@ fi
 echo "Installing dependencies..."
 npm install
 
+# Initialize the database
+echo "Initializing database..."
+npm run db:init
+
 # Build the site
 echo "Building the site..."
 npm run build
@@ -18,18 +22,6 @@ npm run build
 echo "Creating temporary directory..."
 mkdir -p temp-deploy
 cp -r dist/* temp-deploy/
-
-# Also copy the image directory for the rabbit loading.gif
-echo "Copying image directory..."
-cp -r image temp-deploy/
-
-# Create a copy of rabbit loading.gif without spaces for better compatibility
-echo "Creating copy of rabbit loading.gif without spaces..."
-cp "image/rabbit loading.gif" temp-deploy/image/rabbit-loading.gif
-
-# Copy test file for debugging
-echo "Copying test file..."
-cp test-image-access.html temp-deploy/
 
 # Checkout to gh-pages branch (or create it if it doesn't exist)
 echo "Switching to gh-pages branch..."
@@ -50,7 +42,7 @@ git add .
 
 # Commit and push (force push to handle any conflicts)
 echo "Committing and pushing to GitHub..."
-git commit -m "Deploy to GitHub Pages with image test and no-space copy"
+git commit -m "Deploy to GitHub Pages with PostgreSQL database integration"
 git push origin gh-pages --force
 
 # Switch back to main branch

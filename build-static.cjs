@@ -1,64 +1,13 @@
-const { readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync, symlinkSync } = require('fs');
-const { join } = require('path');
+// This script now uses Astro's built-in build command to properly handle API routes
+// and server-side functionality with PostgreSQL database integration
 
-// Create dist directory if it doesn't exist
-const distDir = 'dist';
-if (!existsSync(distDir)) {
-  mkdirSync(distDir, { recursive: true });
+const { execSync } = require('child_process');
+
+try {
+  console.log('Building Astro project with API routes...');
+  execSync('npx astro build', { stdio: 'inherit' });
+  console.log('Astro build completed successfully!');
+} catch (error) {
+  console.error('Astro build failed:', error.message);
+  process.exit(1);
 }
-
-// Read the index.astro file and convert it to static HTML
-const srcIndexPath = 'src/pages/index.astro';
-const indexPath = join(distDir, 'index.html');
-
-if (existsSync(srcIndexPath)) {
-  let content = readFileSync(srcIndexPath, 'utf-8');
-  
-  // Remove frontmatter (--- ... --- blocks)
-  content = content.replace(/---[\s\S]*?---/g, '');
-  
-  // Remove Astro-specific attributes
-  content = content.replace(/is:inline/g, '');
-  
-  // Remove Astro-specific expressions
-  content = content.replace(/\{Astro\.generator\}/g, 'Astro Static Build');
-  
-  // Write the content as HTML
-  writeFileSync(indexPath, content);
-  console.log('Created index.html from index.astro');
-} else {
-  // Create a basic index.html
-  const basicHtml = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HyperWallet Collector</title>
-</head>
-<body>
-  <div id="app">
-    <h1>HyperWallet Collector</h1>
-    <p>Loading...</p>
-  </div>
-</body>
-</html>`;
-  writeFileSync(indexPath, basicHtml);
-  console.log('Created basic index.html');
-}
-
-// Copy files from public directory
-const publicDir = 'public';
-if (existsSync(publicDir)) {
-  // Copy favicon files
-  const faviconFiles = ['favicon.ico', 'favicon.svg'];
-  faviconFiles.forEach(file => {
-    const srcPath = join(publicDir, file);
-    const destPath = join(distDir, file);
-    if (existsSync(srcPath)) {
-      copyFileSync(srcPath, destPath);
-      console.log('Copied ' + file);
-    }
-  });
-}
-
-console.log('Static build completed successfully!');

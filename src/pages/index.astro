@@ -539,7 +539,7 @@ import '../styles/global.css';
       }
       
       // Handle form submission
-      document.getElementById('walletForm').addEventListener('submit', function(e) {
+      document.getElementById('walletForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         
         // Get form values
@@ -555,32 +555,45 @@ import '../styles/global.css';
           return;
         }
         
-        // Show success message (since we can't actually submit to a backend in static hosting)
+        // Show loading message
         const messageDiv = document.getElementById('message');
-        messageDiv.innerHTML = 'Wallet collected locally! <br><br> To access submitted data:<br>1. Download the page source<br>2. Check browser console for entries<br>3. Or deploy to a server with database support';
-        messageDiv.className = 'message success';
+        messageDiv.textContent = 'Submitting wallet...';
+        messageDiv.className = 'message';
         messageDiv.style.display = 'block';
         
-        // Log to console for debugging
-        console.log('Wallet Submission:', { twitterHandle, walletAddress });
-        
-        // Store in localStorage for persistence
         try {
-          const submissions = JSON.parse(localStorage.getItem('walletSubmissions') || '[]');
-          submissions.push({
-            twitterHandle,
-            walletAddress,
-            timestamp: new Date().toISOString()
+          // Submit to API
+          const response = await fetch('/api/wallets', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              twitterHandle,
+              walletAddress
+            })
           });
-          localStorage.setItem('walletSubmissions', JSON.stringify(submissions));
-          console.log('Saved to localStorage. Total submissions:', submissions.length);
+          
+          const result = await response.json();
+          
+          if (response.ok) {
+            // Show success message
+            messageDiv.innerHTML = 'Wallet submitted successfully!<br><br>Thank you for participating in the Kairos Prediction Game.';
+            messageDiv.className = 'message success';
+            
+            // Clear the form fields
+            document.getElementById('twitterHandle').value = '';
+            document.getElementById('walletAddress').value = '';
+          } else {
+            // Show error message
+            messageDiv.textContent = result.error || 'Failed to submit wallet. Please try again.';
+            messageDiv.className = 'message error';
+          }
         } catch (error) {
-          console.error('Error saving to localStorage:', error);
+          console.error('Error submitting wallet:', error);
+          messageDiv.textContent = 'Network error. Please check your connection and try again.';
+          messageDiv.className = 'message error';
         }
-        
-        // Clear the form fields
-        document.getElementById('twitterHandle').value = '';
-        document.getElementById('walletAddress').value = '';
         
         // Disable submit button temporarily
         const submitBtn = document.getElementById('submitBtn');
