@@ -31,7 +31,16 @@ export default async function handler(request, response) {
         data: wallets
       });
     } else if (request.method === 'POST') {
-      const { twitterHandle, walletAddress } = request.body;
+      let body;
+      try {
+        body = typeof request.body === 'string' ? JSON.parse(request.body) : request.body;
+      } catch (parseError) {
+        return response.status(400).json({
+          error: 'Invalid JSON in request body'
+        });
+      }
+
+      const { twitterHandle, walletAddress } = body;
 
       // Validate input
       if (!twitterHandle || !walletAddress) {
