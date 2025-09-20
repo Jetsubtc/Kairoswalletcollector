@@ -1,115 +1,6 @@
-import pg from 'pg';
-
-const { Pool } = pg;
-
-// PostgreSQL connection pool - created per function invocation
-let pool;
-
-function getPool() {
-  if (!pool) {
-    pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: process.env.NODE_ENV === 'production' ? {
-        rejectUnauthorized: false
-      } : false,
-      max: 1, // Limit connections for serverless
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 10000,
-    });
-  }
-  return pool;
-}
-
-// Database functions
-async function insertWallet(twitterHandle, walletAddress) {
-  const query = `
-    INSERT INTO wallets (twitter_handle, wallet_address)
-    VALUES ($1, $2)
-    RETURNING id, created_at;
-  `;
-
-  try {
-    const pool = getPool();
-    const client = await pool.connect();
-    const result = await client.query(query, [twitterHandle, walletAddress]);
-    client.release();
-    return result.rows[0];
-  } catch (err) {
-    console.error('Error inserting wallet:', err);
-    throw err;
-  }
-}
-
-async function getAllWallets() {
-  const query = `
-    SELECT id, twitter_handle, wallet_address, created_at
-    FROM wallets
-    ORDER BY created_at DESC;
-  `;
-
-  try {
-    const pool = getPool();
-    const client = await pool.connect();
-    const result = await client.query(query);
-    client.release();
-    return result.rows;
-  } catch (err) {
-    console.error('Error fetching wallets:', err);
-    throw err;
-  }
-}
-
-async function getWalletCount() {
-  const query = `
-    SELECT COUNT(*) as count
-    FROM wallets;
-  `;
-
-  try {
-    const pool = getPool();
-    const client = await pool.connect();
-    const result = await client.query(query);
-    client.release();
-    return parseInt(result.rows[0].count);
-  } catch (err) {
-    console.error('Error fetching wallet count:', err);
-    throw err;
-  }
-}
-
-async function createWalletsTable() {
-  const query = `
-    CREATE TABLE IF NOT EXISTS wallets (
-      id SERIAL PRIMARY KEY,
-      twitter_handle VARCHAR(100) NOT NULL,
-      wallet_address VARCHAR(255) NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      UNIQUE(twitter_handle, wallet_address)
-    );
-  `;
-
-  try {
-    const pool = getPool();
-    const client = await pool.connect();
-    await client.query(query);
-    console.log('Wallets table created or already exists');
-    client.release();
-    return true;
-  } catch (err) {
-    console.error('Error creating wallets table:', err);
-    return false;
-  }
-}
-
-async function initializeDatabase() {
-  try {
-    await createWalletsTable();
-    return true;
-  } catch (error) {
-    console.error('Database initialization failed:', error);
-    return false;
-  }
-}
+// Temporary in-memory storage for testing
+let wallets = [];
+let walletCount = 0;
 
 export default async function handler(request, response) {
   console.log('API Wallets function called:', request.method, request.url);
@@ -127,21 +18,13 @@ export default async function handler(request, response) {
   }
 
   try {
-    // Initialize database
-    const dbInitialized = await initializeDatabase();
-    if (!dbInitialized) {
-      return response.status(500).json({ error: 'Database initialization failed' });
-    }
-
     if (request.method === 'GET') {
-      // Fetch all wallets
-      const wallets = await getAllWallets();
-      const count = await getWalletCount();
-
+      // Return in-memory wallets for testing
       return response.status(200).json({
         success: true,
-        count,
-        data: wallets
+        count: walletCount,
+        data: wallets,
+        message: 'Using in-memory storage (database connection disabled for testing)'
       });
     } else if (request.method === 'POST') {
       let body;
@@ -170,15 +53,23 @@ export default async function handler(request, response) {
         });
       }
 
-      // Insert wallet into database
-      const result = await insertWallet(twitterHandle, walletAddress);
+      // Store in memory for testing
+      const newWallet = {
+        id: Date.now(),
+        twitter_handle: twitterHandle,
+        wallet_address: walletAddress,
+        created_at: new Date().toISOString()
+      };
+
+      wallets.unshift(newWallet);
+      walletCount++;
 
       return response.status(201).json({
         success: true,
-        message: 'Wallet submitted successfully',
+        message: 'Wallet submitted successfully (stored in memory for testing)',
         data: {
-          id: result.id,
-          createdAt: result.created_at
+          id: newWallet.id,
+          createdAt: newWallet.created_at
         }
       });
     } else {
@@ -186,16 +77,9 @@ export default async function handler(request, response) {
     }
   } catch (error) {
     console.error('Error in wallets API:', error);
-
-    // Handle duplicate entry
-    if (error.code === '23505') {
-      return response.status(409).json({
-        error: 'This Twitter handle and wallet address combination already exists'
-      });
-    }
-
     response.status(500).json({
-      error: 'Internal server error'
+      error: 'Internal server error',
+      details: error.message
     });
   }
 }

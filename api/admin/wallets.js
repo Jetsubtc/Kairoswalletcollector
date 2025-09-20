@@ -1,96 +1,6 @@
-import pg from 'pg';
-
-const { Pool } = pg;
-
-// PostgreSQL connection pool - created per function invocation
-let pool;
-
-function getPool() {
-  if (!pool) {
-    pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: process.env.NODE_ENV === 'production' ? {
-        rejectUnauthorized: false
-      } : false,
-      max: 1, // Limit connections for serverless
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 10000,
-    });
-  }
-  return pool;
-}
-
-// Database functions
-async function getAllWallets() {
-  const query = `
-    SELECT id, twitter_handle, wallet_address, created_at
-    FROM wallets
-    ORDER BY created_at DESC;
-  `;
-
-  try {
-    const pool = getPool();
-    const client = await pool.connect();
-    const result = await client.query(query);
-    client.release();
-    return result.rows;
-  } catch (err) {
-    console.error('Error fetching wallets:', err);
-    throw err;
-  }
-}
-
-async function getWalletCount() {
-  const query = `
-    SELECT COUNT(*) as count
-    FROM wallets;
-  `;
-
-  try {
-    const pool = getPool();
-    const client = await pool.connect();
-    const result = await client.query(query);
-    client.release();
-    return parseInt(result.rows[0].count);
-  } catch (err) {
-    console.error('Error fetching wallet count:', err);
-    throw err;
-  }
-}
-
-async function createWalletsTable() {
-  const query = `
-    CREATE TABLE IF NOT EXISTS wallets (
-      id SERIAL PRIMARY KEY,
-      twitter_handle VARCHAR(100) NOT NULL,
-      wallet_address VARCHAR(255) NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      UNIQUE(twitter_handle, wallet_address)
-    );
-  `;
-
-  try {
-    const pool = getPool();
-    const client = await pool.connect();
-    await client.query(query);
-    console.log('Wallets table created or already exists');
-    client.release();
-    return true;
-  } catch (err) {
-    console.error('Error creating wallets table:', err);
-    return false;
-  }
-}
-
-async function initializeDatabase() {
-  try {
-    await createWalletsTable();
-    return true;
-  } catch (error) {
-    console.error('Database initialization failed:', error);
-    return false;
-  }
-}
+// Temporary in-memory storage for testing (same as wallets.js)
+let wallets = [];
+let walletCount = 0;
 
 // Get admin credentials from environment variables
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
@@ -112,12 +22,6 @@ export default async function handler(request, response) {
   }
 
   try {
-    // Initialize database
-    const dbInitialized = await initializeDatabase();
-    if (!dbInitialized) {
-      return response.status(500).json({ error: 'Database initialization failed' });
-    }
-
     // Check for authorization header
     const authHeader = request.headers.authorization;
     const credentials = authHeader && authHeader.startsWith('Basic ') ? authHeader.substring(6) : null;
@@ -141,11 +45,7 @@ export default async function handler(request, response) {
     }
 
     if (request.method === 'GET') {
-      // Fetch all wallets
-      const wallets = await getAllWallets();
-      const count = await getWalletCount();
-
-      // Format the data for the admin panel
+      // Return in-memory wallets for testing
       const formattedWallets = wallets.map(wallet => ({
         twitterHandle: wallet.twitter_handle,
         walletAddress: wallet.wallet_address,
@@ -154,8 +54,9 @@ export default async function handler(request, response) {
 
       return response.status(200).json({
         success: true,
-        count,
-        wallets: formattedWallets
+        count: walletCount,
+        wallets: formattedWallets,
+        message: 'Using in-memory storage (database connection disabled for testing)'
       });
     } else {
       response.status(405).json({ error: 'Method not allowed' });
@@ -164,7 +65,8 @@ export default async function handler(request, response) {
     console.error('Error in admin wallets API:', error);
     response.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
+      details: error.message
     });
   }
 }
