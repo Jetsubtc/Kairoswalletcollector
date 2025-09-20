@@ -2,7 +2,6 @@ import express from 'express';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { createServer } from 'http';
-import { initializeDatabase } from './src/server/initDb.js';
 
 // Get the directory name
 const __filename = fileURLToPath(import.meta.url);
@@ -14,15 +13,6 @@ const port = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
-
-// Initialize the database
-try {
-  await initializeDatabase();
-  console.log('Database initialized successfully');
-} catch (error) {
-  console.error('Failed to initialize database:', error);
-  process.exit(1);
-}
 
 // Import and use API routes
 const walletsApi = await import('./src/pages/api/wallets.js');

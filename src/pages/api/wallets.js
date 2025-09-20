@@ -1,7 +1,26 @@
 import { insertWallet, getAllWallets, getWalletCount } from '../../server/db.js';
+import { initializeDatabase } from '../../server/initDb.js';
+
+// Ensure database is initialized
+let isDatabaseInitialized = false;
+
+async function ensureDatabaseInitialized() {
+  if (!isDatabaseInitialized) {
+    try {
+      await initializeDatabase();
+      isDatabaseInitialized = true;
+    } catch (error) {
+      console.error('Failed to initialize database:', error);
+      throw error;
+    }
+  }
+}
 
 export async function post({ request }) {
   try {
+    // Ensure database is initialized
+    await ensureDatabaseInitialized();
+    
     // Handle different request formats
     let requestData;
     if (typeof request.json === 'function') {
@@ -75,6 +94,9 @@ export async function post({ request }) {
 
 export async function get() {
   try {
+    // Ensure database is initialized
+    await ensureDatabaseInitialized();
+    
     // Fetch all wallets (in a real app, you might want to add pagination)
     const wallets = await getAllWallets();
     const count = await getWalletCount();

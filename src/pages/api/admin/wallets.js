@@ -1,4 +1,5 @@
 import { getAllWallets, getWalletCount } from '../../../server/db.js';
+import { initializeDatabase } from '../../../server/initDb.js';
 
 // Get admin credentials from environment variables
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
@@ -32,8 +33,26 @@ function getCredentials(request) {
   return null;
 }
 
+// Ensure database is initialized
+let isDatabaseInitialized = false;
+
+async function ensureDatabaseInitialized() {
+  if (!isDatabaseInitialized) {
+    try {
+      await initializeDatabase();
+      isDatabaseInitialized = true;
+    } catch (error) {
+      console.error('Failed to initialize database:', error);
+      throw error;
+    }
+  }
+}
+
 export async function get({ request }) {
   try {
+    // Ensure database is initialized
+    await ensureDatabaseInitialized();
+    
     // Extract credentials
     const credentials = getCredentials(request);
     
