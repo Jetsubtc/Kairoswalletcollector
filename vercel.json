@@ -1,14 +1,18 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "functions": {
+    "api/test.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/wallets.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/admin/wallets.js": {
+      "runtime": "nodejs18.x"
     }
-  ],
+  },
   "routes": [
     {
       "src": "/api/test",
