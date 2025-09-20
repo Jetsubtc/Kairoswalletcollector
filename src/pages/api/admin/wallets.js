@@ -1,5 +1,5 @@
 import { getAllWallets, getWalletCount } from '../../../server/db.js';
-import { initializeDatabase } from '../../../server/initDb.js';
+import { initializeDatabase } from '../../../server/vercelInit.js';
 
 // Get admin credentials from environment variables
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
@@ -39,7 +39,10 @@ let isDatabaseInitialized = false;
 async function ensureDatabaseInitialized() {
   if (!isDatabaseInitialized) {
     try {
-      await initializeDatabase();
+      const success = await initializeDatabase();
+      if (!success) {
+        throw new Error('Database initialization failed');
+      }
       isDatabaseInitialized = true;
     } catch (error) {
       console.error('Failed to initialize database:', error);

@@ -1,5 +1,5 @@
 import { insertWallet, getAllWallets, getWalletCount } from '../../server/db.js';
-import { initializeDatabase } from '../../server/initDb.js';
+import { initializeDatabase } from '../../server/vercelInit.js';
 
 // Ensure database is initialized
 let isDatabaseInitialized = false;
@@ -7,7 +7,10 @@ let isDatabaseInitialized = false;
 async function ensureDatabaseInitialized() {
   if (!isDatabaseInitialized) {
     try {
-      await initializeDatabase();
+      const success = await initializeDatabase();
+      if (!success) {
+        throw new Error('Database initialization failed');
+      }
       isDatabaseInitialized = true;
     } catch (error) {
       console.error('Failed to initialize database:', error);

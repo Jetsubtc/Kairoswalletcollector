@@ -1,6 +1,12 @@
 import { createWalletsTable, testConnection } from './db.js';
 
+let isDatabaseInitialized = false;
+
 export async function initializeDatabase() {
+  if (isDatabaseInitialized) {
+    return true;
+  }
+  
   console.log('Initializing database...');
   
   // Test the database connection
@@ -22,22 +28,9 @@ export async function initializeDatabase() {
   }
   
   console.log('Wallets table created successfully!');
+  isDatabaseInitialized = true;
   console.log('Database initialization completed successfully!');
   return true;
-}
-
-// Run the initialization if this file is executed directly
-if (import.meta.url === `file://${process.argv[1]}`) {
-  initializeDatabase().then(success => {
-    if (!success) {
-      console.error('Database initialization failed');
-      process.exit(1);
-    }
-    console.log('Database initialized successfully');
-  }).catch(error => {
-    console.error('Database initialization error:', error);
-    process.exit(1);
-  });
 }
 
 export default initializeDatabase;

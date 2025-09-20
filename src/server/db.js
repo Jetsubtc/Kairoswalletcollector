@@ -106,4 +106,7 @@ export async function getWalletCount() {
   }
 }
 
+// Export the pool for direct use when needed
+export { pool };
+
 export default pool;
