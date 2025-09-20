@@ -3,20 +3,15 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "node src/utils/initDb.js && astro dev",
+    "dev": "astro dev",
     "build": "node build-static.cjs",
     "preview": "astro preview",
-    "astro": "astro",
-    "db:init": "node src/utils/initDb.js",
-    "db:migrate": "node src/utils/migrateData.js",
-    "vercel-build": "node build-static.cjs"
+    "astro": "astro"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.13",
     "@tailwindcss/vite": "^4.1.13",
-    "astro": "^5.13.9",
-    "dotenv": "^17.2.2",
-    "pg": "^8.16.3"
+    "astro": "^5.13.9"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21"
