@@ -11,6 +11,10 @@
   ],
   "routes": [
     {
+      "src": "/api/test",
+      "dest": "/api/test.js"
+    },
+    {
       "src": "/api/wallets",
       "dest": "/api/wallets.js"
     },
