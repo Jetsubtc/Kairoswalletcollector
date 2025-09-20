@@ -629,6 +629,13 @@ import '../styles/global.css';
           return;
         }
         
+        // Check if stars already exist
+        const existingStars = container.querySelectorAll('.star');
+        if (existingStars.length > 0) {
+          console.log('Stars already exist, skipping creation');
+          return;
+        }
+        
         const starCount = 20;
         
         for (let i = 0; i < starCount; i++) {
@@ -652,6 +659,13 @@ import '../styles/global.css';
           return;
         }
         
+        // Check if planet already exists
+        const existingPlanet = container.querySelector('.planet');
+        if (existingPlanet) {
+          console.log('Planet already exists, skipping creation');
+          return;
+        }
+        
         const planet = document.createElement('div');
         planet.className = 'planet';
         planet.style.width = '80px';
@@ -667,6 +681,13 @@ import '../styles/global.css';
         const container = document.querySelector('.background-elements');
         if (!container) {
           console.log('Background elements container not found');
+          return;
+        }
+        
+        // Check if fireball already exists
+        const existingFireball = container.querySelector('.fireball');
+        if (existingFireball) {
+          console.log('Fireball already exists, skipping creation');
           return;
         }
         
