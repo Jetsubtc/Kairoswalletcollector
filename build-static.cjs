@@ -23,13 +23,6 @@ if (existsSync(srcIndexPath)) {
   // Remove Astro-specific expressions
   content = content.replace(/\{Astro\.generator\}/g, 'Astro Static Build');
   
-  // Fix image path to use the correct rabbit loading.gif
-  // Try both paths to see which one works
-  content = content.replace(/src="\/images\/loading\.gif"/g, 'src="./image/rabbit-loading.gif"');
-  content = content.replace(/src="images\/loading\.gif"/g, 'src="./image/rabbit-loading.gif"');
-  content = content.replace(/src="\.\/image\/rabbit%20loading\.gif"/g, 'src="./image/rabbit-loading.gif"');
-  content = content.replace(/src="\.\/image\/rabbit loading\.gif"/g, 'src="./image/rabbit-loading.gif"');
-  
   // Write the content as HTML
   writeFileSync(indexPath, content);
   console.log('Created index.html from index.astro');
@@ -66,35 +59,6 @@ if (existsSync(publicDir)) {
       console.log('Copied ' + file);
     }
   });
-  
-  // Copy the entire images directory if it exists (but not the rabbit loading.gif)
-  const imagesSrc = join(publicDir, 'images');
-  const imagesDest = join(distDir, 'images');
-  if (existsSync(imagesSrc)) {
-    // Create images directory in dist
-    if (!existsSync(imagesDest)) {
-      mkdirSync(imagesDest, { recursive: true });
-    }
-    
-    // Copy all files in images directory except loading.gif
-    const { readdirSync } = require('fs');
-    try {
-      const imageFiles = readdirSync(imagesSrc);
-      imageFiles.forEach(file => {
-        // Skip loading.gif as we're referencing the one in the image directory directly
-        if (file !== 'loading.gif') {
-          const srcPath = join(imagesSrc, file);
-          const destPath = join(imagesDest, file);
-          copyFileSync(srcPath, destPath);
-          console.log('Copied image: ' + file);
-        }
-      });
-    } catch (err) {
-      console.log('Could not copy images directory: ' + err.message);
-    }
-  }
 }
 
-// No need to copy the rabbit loading.gif as we're referencing it directly from the source image directory
-// The deploy script will copy the image directory to the gh-pages branch
 console.log('Static build completed successfully!');
