@@ -1,5 +1,5 @@
-import { getAllWallets, getWalletCount } from '../../src/server/db.js';
-import { initializeDatabase } from '../../src/server/vercelInit.js';
+import { getAllWallets, getWalletCount } from '../../../src/server/db.js';
+import { initializeDatabase } from '../../../src/server/vercelInit.js';
 
 // Get admin credentials from environment variables
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
